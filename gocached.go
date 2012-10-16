@@ -27,72 +27,76 @@ type Item struct {
 	value []byte
 }
 
-type Server struct {
+type Cache struct {
 	store map[string]*Item
 }
 
 // Public: store the key-value pair
-func (s *Server) Set(key, value string) (err error) {
-	s.store[key] = &Item{value: []byte(value)}
+func (s *Cache) Set(key string, value []byte) (err error) {
+	s.store[key] = &Item{value: value}
 	return nil
 }
 
 // Public: store the key-value pair only if the key does not exist in the store
-func (s *Server) Add(key, value string) (err error) {
+func (s *Cache) Add(key string, value []byte) (err error) {
 	if !s.hasKey(key) {
-		s.store[key] = &Item{value: []byte(value)}
+		s.store[key] = &Item{value: value}
 	}
 	return nil
 }
 
 // Public: replace the value of a key with another value
-func (s *Server) Replace(key, value string) (status bool, err error) {
+func (s *Cache) Replace(key string, value []byte) (status bool, err error) {
 	if !s.hasKey(key) {
 		return false, nil
 	}
-	s.store[key] = &Item{value: []byte(value)}
+	s.store[key] = &Item{value: value}
 	return true, nil
 }
 
 // Public: append the value to an existing key value pair
-func (s *Server) Append(key, value string) (status bool, err error) {
+func (s *Cache) Append(key string, value []byte) (status bool, err error) {
 	if !s.hasKey(key) {
 		return false, nil
 	}
 	existingItem, _ := s.Get(key)
-	existingItem.value = append(existingItem.value, []byte(value)...)
+	existingItem.value = append(existingItem.value, value...)
 	s.store[key] = existingItem
 	return true, nil
 }
 
 // Public: prepend the value to an existing key value pair
-func (s *Server) Prepend(key, value string) (status bool, err error) {
+func (s *Cache) Prepend(key string, value []byte) (status bool, err error) {
 	if !s.hasKey(key) {
 		return false, nil
 	}
 	existingItem, _ := s.Get(key)
-	existingItem.value = append([]byte(value), existingItem.value...)
+	existingItem.value = append(value, existingItem.value...)
 	s.store[key] = existingItem
 	return true, nil
 }
 
 // Public: get the current data given a key
-func (s *Server) Get(key string) (item *Item, err error) {
+func (s *Cache) Get(key string) (item *Item, err error) {
 	v := s.store[key]
 	return v, nil
 }
 
 // Private: check existence of the key
-func (s *Server) hasKey(key string) bool {
+func (s *Cache) hasKey(key string) bool {
 	_, ok := s.store[key]
 	return ok
 }
 
-func (s *Server) Delete(key string) (err error) {
+func (s *Cache) Delete(key string) (err error) {
 	delete(s.store, key)
 	return nil
 }
 
-func NewServer() *Server {
-	return &Server{store: make(map[string]*Item)}
+func (s *Cache) Version() string {
+	return "0.0.1"
+}
+
+func NewCache() *Cache {
+	return &Cache{store: make(map[string]*Item)}
 }
